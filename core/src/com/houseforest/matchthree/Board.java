@@ -45,7 +45,6 @@ public class Board extends SceneNode {
 
         margin = new Point(18, 18);
 
-        Random random = new Random();
         this.pieces = new Piece[pieceCount.x][pieceCount.y];
         for (int x = 0; x < pieceCount.x; ++x) {
             for (int y = 0; y < pieceCount.y; ++y) {
@@ -119,14 +118,13 @@ public class Board extends SceneNode {
         pieces[firstPosition.x][firstPosition.y].updatePosition(firstPosition);
         pieces[secondPosition.x][secondPosition.y].updatePosition(secondPosition);
 
-        for(Pair<Point, Point> match : checkForMatches()) {
-            handleMatch(match.getKey(), match.getValue());
+        for(Match match : checkForMatches()) {
+            handleMatch(match);
         }
     }
 
-    private Vector<Pair<Point, Point>> checkForMatches() {
-
-        Vector<Pair<Point, Point>> matches = new Vector<Pair<Point, Point>>();
+    private Vector<Match> checkForMatches() {
+        Vector<Match> matches = new Vector<Match>();
 
         // Check for horizontal matches.
         for (int y = 0; y < pieceCount.y; ++y) {
@@ -143,7 +141,7 @@ public class Board extends SceneNode {
                 // Matching [x0, x1).
                 int matchedCount = x1 - x0;
                 if (matchedCount >= 3) {
-                    matches.add(new Pair<Point, Point>(new Point(x0, y), new Point(x1 - 1, y)));
+                    matches.add(new Match(new Point(x0, y), new Point(x1 - 1, y)));
                 }
 
                 // Skip behind the matched segment.
@@ -166,7 +164,7 @@ public class Board extends SceneNode {
                 // Matching [y0, y1).
                 int matchedCount = y1 - y0;
                 if (matchedCount >= 3) {
-                    matches.add(new Pair<Point, Point>(new Point(x, y0), new Point(x, y1 - 1)));
+                    matches.add(new Match(new Point(x, y0), new Point(x, y1 - 1)));
                 }
 
                 // Skip below the matched segment.
@@ -177,9 +175,9 @@ public class Board extends SceneNode {
         return matches;
     }
 
-    private void handleMatch(Point start, Point end) {
-        for (int y = start.y; y <= end.y; ++y) {
-            for (int x = start.x; x <= end.x; ++x) {
+    private void handleMatch(Match match) {
+        for (int y = match.getStart().y; y <= match.getEnd().y; ++y) {
+            for (int x = match.getStart().x; x <= match.getEnd().x; ++x) {
                 setPieceAt(x, y, Piece.random(getGame(), this, x, y));
             }
         }
