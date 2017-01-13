@@ -118,15 +118,15 @@ public class Board extends SceneNode {
         pieces[firstPosition.x][firstPosition.y].updatePosition(firstPosition);
         pieces[secondPosition.x][secondPosition.y].updatePosition(secondPosition);
 
-        for(Match match : checkForMatches()) {
+        Match match;
+        while((match = findMatch()) != null) {
+            Game.log("Found match from " + match.getStart().toString() + " to " + match.getEnd().toString());
             handleMatch(match);
         }
     }
 
-    private Vector<Match> checkForMatches() {
-        Vector<Match> matches = new Vector<Match>();
-
-        // Check for horizontal matches.
+    private Match findMatch() {
+        // Check for horizontal match.
         for (int y = 0; y < pieceCount.y; ++y) {
             for (int x0 = 0; x0 < pieceCount.x - 2; ++x0) {
                 Piece.Variant v = getPieceAt(x0, y).getVariant();
@@ -141,11 +141,8 @@ public class Board extends SceneNode {
                 // Matching [x0, x1).
                 int matchedCount = x1 - x0;
                 if (matchedCount >= 3) {
-                    matches.add(new Match(new Point(x0, y), new Point(x1 - 1, y)));
+                    return new Match(new Point(x0, y), new Point(x1 - 1, y));
                 }
-
-                // Skip behind the matched segment.
-                x0 += matchedCount - 1;
             }
         }
 
@@ -164,20 +161,38 @@ public class Board extends SceneNode {
                 // Matching [y0, y1).
                 int matchedCount = y1 - y0;
                 if (matchedCount >= 3) {
-                    matches.add(new Match(new Point(x, y0), new Point(x, y1 - 1)));
+                    return new Match(new Point(x, y0), new Point(x, y1 - 1));
                 }
-
-                // Skip below the matched segment.
-                y0 += matchedCount - 1;
             }
         }
 
-        return matches;
+        return null;
     }
 
     private void handleMatch(Match match) {
-        for (int y = match.getStart().y; y <= match.getEnd().y; ++y) {
+        if(match.isHorizontal()) {
+            int y = match.getStart().y;
             for (int x = match.getStart().x; x <= match.getEnd().x; ++x) {
+                for (int yy = y; yy > 0; --yy) {
+                    // Move pieces down.
+                    setPieceAt(x, yy, getPieceAt(x, yy - 1));
+                }
+
+                // Generate new piece at top.
+                setPieceAt(x, 0, Piece.random(getGame(), this, x, 0));
+            }
+        }
+
+        // Vertical match
+        else {
+            int x = match.getStart().x;
+            for (int y = match.getEnd().y; y >= match.getLength(); --y) {
+                // Move pieces down.
+                setPieceAt(x, y, getPieceAt(x, y - match.getLength()));
+            }
+
+            for(int y = 0; y<match.getLength(); ++y) {
+                // Generate new pieces above.
                 setPieceAt(x, y, Piece.random(getGame(), this, x, y));
             }
         }
@@ -216,6 +231,7 @@ public class Board extends SceneNode {
 
     public void setPieceAt(int x, int y, Piece piece) {
         pieces[x][y] = piece;
+        pieces[x][y].updatePosition(new Point(x, y));
     }
 
     public Point getOffset() {

@@ -17,7 +17,7 @@ public class Match {
         this.start = start;
         this.end = end;
         this.horizontal = end.x != start.x;
-        this.length = end.x - start.x + 1;
+        this.length = horizontal ? (end.x - start.x + 1) : (end.y - start.y + 1);
     }
 
     public boolean isHorizontal() {
