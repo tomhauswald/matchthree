@@ -9,6 +9,9 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 
 import java.awt.Point;
 import java.util.Random;
+import java.util.Vector;
+
+import javafx.util.Pair;
 
 /**
  * Created by Tom on 13.01.2017.
@@ -64,10 +67,10 @@ public class Board extends SceneNode {
         final int pieceAreaX = areaX / pieceCount.x;
         final int pieceAreaY = areaY / pieceCount.y;
 
-        if(boardX >= 0 && boardX < areaX && boardY >= 0 && boardY < areaY) {
+        if (boardX >= 0 && boardX < areaX && boardY >= 0 && boardY < areaY) {
             return new Point(
-                boardX / pieceAreaX,
-                boardY / pieceAreaY
+                    boardX / pieceAreaX,
+                    boardY / pieceAreaY
             );
         } else {
             return null;
@@ -101,9 +104,8 @@ public class Board extends SceneNode {
     }
 
     public void onTouch(int screenX, int screenY) {
-        Game.log(screenX + " " + screenY);
         Point pt = toBoardSpace(new Point(screenX, screenY));
-        if(pt != null) {
+        if (pt != null) {
             touchPosition = pt;
             dragProcessed = false;
         }
@@ -117,27 +119,35 @@ public class Board extends SceneNode {
         pieces[firstPosition.x][firstPosition.y].updatePosition(firstPosition);
         pieces[secondPosition.x][secondPosition.y].updatePosition(secondPosition);
 
+        for(Pair<Point, Point> match : checkForMatches()) {
+            handleMatch(match.getKey(), match.getValue());
+        }
+    }
+
+    private Vector<Pair<Point, Point>> checkForMatches() {
+
+        Vector<Pair<Point, Point>> matches = new Vector<Pair<Point, Point>>();
+
         // Check for horizontal matches.
         for (int y = 0; y < pieceCount.y; ++y) {
             for (int x0 = 0; x0 < pieceCount.x - 2; ++x0) {
                 Piece.Variant v = getPieceAt(x0, y).getVariant();
-                if (v == getPieceAt(x0 + 1, y).getVariant() && v == getPieceAt(x0 + 2, y).getVariant()) {
-                    // Matching at least 3.
-                    int x1 = x0 + 2;
-                    for (; x1 < pieceCount.x; ++x1) {
-                        if (getPieceAt(x1, y).getVariant() != v) {
-                            break;
-                        }
-                    }
 
-                    // Matching [x0, x1).
-                    int matchedCount = x1 - x0 - 1;
-                    for (int x = x0; x < x1; ++x) {
-                        setPieceAt(x, y, Piece.random(getGame(), this, x, y));
+                int x1 = x0 + 1;
+                for (; x1 < pieceCount.x; ++x1) {
+                    if (getPieceAt(x1, y).getVariant() != v) {
+                        break;
                     }
-
-                    x0 += matchedCount;
                 }
+
+                // Matching [x0, x1).
+                int matchedCount = x1 - x0;
+                if (matchedCount >= 3) {
+                    matches.add(new Pair<Point, Point>(new Point(x0, y), new Point(x1 - 1, y)));
+                }
+
+                // Skip behind the matched segment.
+                x0 += matchedCount - 1;
             }
         }
 
@@ -145,23 +155,32 @@ public class Board extends SceneNode {
         for (int x = 0; x < pieceCount.x; ++x) {
             for (int y0 = 0; y0 < pieceCount.y - 2; ++y0) {
                 Piece.Variant v = getPieceAt(x, y0).getVariant();
-                if (v == getPieceAt(x, y0 + 1).getVariant() && v == getPieceAt(x, y0 + 2).getVariant()) {
-                    // Matching at least 3.
-                    int y1 = y0 + 2;
-                    for (; y1 < pieceCount.y; ++y1) {
-                        if (getPieceAt(x, y1).getVariant() != v) {
-                            break;
-                        }
-                    }
 
-                    // Matching [x0, x1).
-                    int matchedCount = y1 - y0 - 1;
-                    for (int y = y0; y < y1; ++y) {
-                        setPieceAt(x, y, Piece.random(getGame(), this, x, y));
+                int y1 = y0 + 1;
+                for (; y1 < pieceCount.y; ++y1) {
+                    if (getPieceAt(x, y1).getVariant() != v) {
+                        break;
                     }
-
-                    y0 += matchedCount;
                 }
+
+                // Matching [y0, y1).
+                int matchedCount = y1 - y0;
+                if (matchedCount >= 3) {
+                    matches.add(new Pair<Point, Point>(new Point(x, y0), new Point(x, y1 - 1)));
+                }
+
+                // Skip below the matched segment.
+                y0 += matchedCount - 1;
+            }
+        }
+
+        return matches;
+    }
+
+    private void handleMatch(Point start, Point end) {
+        for (int y = start.y; y <= end.y; ++y) {
+            for (int x = start.x; x <= end.x; ++x) {
+                setPieceAt(x, y, Piece.random(getGame(), this, x, y));
             }
         }
     }
