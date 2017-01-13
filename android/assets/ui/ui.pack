@@ -1,0 +1,334 @@
+
+ui.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+PanalBig_DarkBrown
+  rotate: false
+  xy: 1, 180
+  size: 200, 331
+  orig: 200, 331
+  offset: 0, 0
+  index: -1
+PanalBig_LightBrown
+  rotate: false
+  xy: 203, 180
+  size: 200, 331
+  orig: 200, 331
+  offset: 0, 0
+  index: -1
+ExplosionStroke_Horizontal
+  rotate: false
+  xy: 405, 188
+  size: 60, 323
+  orig: 60, 323
+  offset: 0, 0
+  index: -1
+ExplosionStroke_Vertical
+  rotate: false
+  xy: 1, 118
+  size: 323, 60
+  orig: 323, 60
+  offset: 0, 0
+  index: -1
+PanalSmall_DarkBrown
+  rotate: false
+  xy: 467, 371
+  size: 200, 140
+  orig: 200, 140
+  offset: 0, 0
+  index: -1
+PanalSmall_LightBrown
+  rotate: false
+  xy: 467, 229
+  size: 200, 140
+  orig: 200, 140
+  offset: 0, 0
+  index: -1
+StarBeam_DarkBrown
+  rotate: false
+  xy: 1, 65
+  size: 200, 51
+  orig: 200, 51
+  offset: 0, 0
+  index: -1
+StarBeam_LightBrown
+  rotate: false
+  xy: 669, 460
+  size: 200, 51
+  orig: 200, 51
+  offset: 0, 0
+  index: -1
+StarBeam_TimeBar_DarkOrange
+  rotate: false
+  xy: 467, 199
+  size: 177, 28
+  orig: 177, 28
+  offset: 0, 0
+  index: -1
+StarBeam_TimeBar_LightOrange
+  rotate: false
+  xy: 1, 35
+  size: 177, 28
+  orig: 177, 28
+  offset: 0, 0
+  index: -1
+BeamHeart_DarkBrown
+  rotate: false
+  xy: 669, 418
+  size: 149, 40
+  orig: 149, 40
+  offset: 0, 0
+  index: -1
+BeamHeart_LightBrown
+  rotate: false
+  xy: 871, 472
+  size: 149, 39
+  orig: 149, 39
+  offset: 0, 0
+  index: -1
+Stars
+  rotate: false
+  xy: 1, 6
+  size: 161, 27
+  orig: 161, 27
+  offset: 0, 0
+  index: -1
+BeamCoin_DarkBrown
+  rotate: false
+  xy: 669, 377
+  size: 148, 39
+  orig: 148, 39
+  offset: 0, 0
+  index: -1
+BeamCoin_LightBrown
+  rotate: false
+  xy: 669, 337
+  size: 148, 38
+  orig: 148, 38
+  offset: 0, 0
+  index: -1
+BeamSeed_DarkBrown
+  rotate: false
+  xy: 669, 299
+  size: 147, 36
+  orig: 147, 36
+  offset: 0, 0
+  index: -1
+BeamSeed_lightBrown
+  rotate: false
+  xy: 669, 261
+  size: 147, 36
+  orig: 147, 36
+  offset: 0, 0
+  index: -1
+BeamEmpty_DarkBrown
+  rotate: false
+  xy: 669, 223
+  size: 138, 36
+  orig: 138, 36
+  offset: 0, 0
+  index: -1
+BeamEmpty_LightBrown
+  rotate: false
+  xy: 203, 80
+  size: 138, 36
+  orig: 138, 36
+  offset: 0, 0
+  index: -1
+Explosion
+  rotate: false
+  xy: 871, 390
+  size: 98, 80
+  orig: 98, 80
+  offset: 0, 0
+  index: -1
+Element_Bomb
+  rotate: false
+  xy: 326, 120
+  size: 47, 58
+  orig: 47, 58
+  offset: 0, 0
+  index: -1
+BackgroundBox
+  rotate: false
+  xy: 203, 3
+  size: 76, 75
+  orig: 76, 75
+  offset: 0, 0
+  index: 1
+BackgroundBox
+  rotate: false
+  xy: 281, 3
+  size: 76, 75
+  orig: 76, 75
+  offset: 0, 0
+  index: 2
+Element_Clock
+  rotate: false
+  xy: 971, 426
+  size: 45, 44
+  orig: 45, 44
+  offset: 0, 0
+  index: -1
+BackgroundBox
+  rotate: false
+  xy: 375, 103
+  size: 76, 75
+  orig: 76, 75
+  offset: 0, 0
+  index: 3
+BackgroundBox
+  rotate: false
+  xy: 359, 26
+  size: 76, 75
+  orig: 76, 75
+  offset: 0, 0
+  index: 4
+Element_WateringCan
+  rotate: false
+  xy: 820, 414
+  size: 44, 44
+  orig: 44, 44
+  offset: 0, 0
+  index: -1
+Element_Shovel
+  rotate: false
+  xy: 819, 362
+  size: 33, 50
+  orig: 33, 50
+  offset: 0, 0
+  index: -1
+BoosterBox_DarkBrown
+  rotate: false
+  xy: 437, 36
+  size: 65, 65
+  orig: 65, 65
+  offset: 0, 0
+  index: -1
+Element_Seed
+  rotate: false
+  xy: 437, 1
+  size: 44, 33
+  orig: 44, 33
+  offset: 0, 0
+  index: -1
+BoosterBox_LightBrown
+  rotate: false
+  xy: 854, 324
+  size: 65, 64
+  orig: 65, 64
+  offset: 0, 0
+  index: -1
+Element_Heart
+  rotate: false
+  xy: 921, 351
+  size: 39, 37
+  orig: 39, 37
+  offset: 0, 0
+  index: -1
+Element_Coin
+  rotate: false
+  xy: 971, 389
+  size: 37, 35
+  orig: 37, 35
+  offset: 0, 0
+  index: -1
+Checkmark_Ticked_DarkBrown
+  rotate: false
+  xy: 921, 323
+  size: 29, 26
+  orig: 29, 26
+  offset: 0, 0
+  index: -1
+Checkmark_Ticked_LightBrown
+  rotate: false
+  xy: 819, 334
+  size: 29, 26
+  orig: 29, 26
+  offset: 0, 0
+  index: -1
+Checkmark_DarkBrown
+  rotate: false
+  xy: 818, 307
+  size: 25, 25
+  orig: 25, 25
+  offset: 0, 0
+  index: -1
+Checkmark_LightBrown
+  rotate: false
+  xy: 818, 280
+  size: 25, 25
+  orig: 25, 25
+  offset: 0, 0
+  index: -1
+Badge
+  rotate: false
+  xy: 483, 9
+  size: 24, 25
+  orig: 24, 25
+  offset: 0, 0
+  index: 1
+PlusSigns_Green
+  rotate: false
+  xy: 359, 3
+  size: 22, 21
+  orig: 22, 21
+  offset: 0, 0
+  index: -1
+PlusSigns_Orange
+  rotate: false
+  xy: 383, 3
+  size: 22, 21
+  orig: 22, 21
+  offset: 0, 0
+  index: -1
+PlusSigns_Red
+  rotate: false
+  xy: 407, 3
+  size: 22, 21
+  orig: 22, 21
+  offset: 0, 0
+  index: -1
+Checkmark_UnTicked_DarkBrown
+  rotate: false
+  xy: 818, 253
+  size: 25, 25
+  orig: 25, 25
+  offset: 0, 0
+  index: -1
+Checkmark_UnTicked_LightBrown
+  rotate: false
+  xy: 962, 362
+  size: 25, 25
+  orig: 25, 25
+  offset: 0, 0
+  index: -1
+Badge
+  rotate: false
+  xy: 989, 362
+  size: 24, 25
+  orig: 24, 25
+  offset: 0, 0
+  index: 2
+Badge
+  rotate: false
+  xy: 845, 297
+  size: 24, 25
+  orig: 24, 25
+  offset: 0, 0
+  index: 3
+Badge
+  rotate: false
+  xy: 845, 270
+  size: 24, 25
+  orig: 24, 25
+  offset: 0, 0
+  index: 4
+Element_BombSparkle
+  rotate: false
+  xy: 854, 398
+  size: 15, 14
+  orig: 15, 14
+  offset: 0, 0
+  index: -1
