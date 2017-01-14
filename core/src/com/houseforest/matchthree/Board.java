@@ -2,12 +2,13 @@ package com.houseforest.matchthree;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.utils.Disposable;
 
-import java.awt.Point;
 import java.util.Random;
 import java.util.Vector;
 
@@ -17,33 +18,33 @@ import javafx.util.Pair;
  * Created by Tom on 13.01.2017.
  */
 
-public class Board extends SceneNode {
+public class Board extends SceneNode implements Disposable {
 
-    private Sprite backgroundSprite;
+    private Texture backgroundTexture;
     private Piece[][] pieces;
-    private Point pieceCount;
-    private Point sizeInPixels;
-    private Point offset;
-    private Point margin;
-    private Point touchPosition;
+    private Vector2i pieceCount;
+    private Vector2i sizeInPixels;
+    private Vector2i offset;
+    private Vector2i margin;
+    private Vector2i touchPosition;
     private boolean dragProcessed;
 
     public Board(Game game) {
         super(game);
 
-        pieceCount = new Point(8, 8);
+        pieceCount = new Vector2i(8, 8);
 
-        sizeInPixels = new Point(
+        sizeInPixels = new Vector2i(
                 Math.round(Game.RESOLUTION.y * 0.9f),
                 Math.round(Game.RESOLUTION.y * 0.9f)
         );
 
-        offset = new Point(
+        offset = new Vector2i(
                 (Game.RESOLUTION.x - sizeInPixels.x) / 2,
                 (Game.RESOLUTION.y - sizeInPixels.y) / 2
         );
 
-        margin = new Point(18, 18);
+        margin = new Vector2i(18, 18);
 
         this.pieces = new Piece[pieceCount.x][pieceCount.y];
         for (int x = 0; x < pieceCount.x; ++x) {
@@ -52,13 +53,10 @@ public class Board extends SceneNode {
             }
         }
 
-        TextureAtlas uiAtlas = game.getTextureAtlas(Game.TextureAtlasName.UI);
-        this.backgroundSprite = uiAtlas.createSprite("BackgroundBox", 1);
-        this.backgroundSprite.setPosition(offset.x, offset.y);
-        this.backgroundSprite.setSize(sizeInPixels.x, sizeInPixels.y);
+        this.backgroundTexture = new Texture(Gdx.files.internal("board.png"));
     }
 
-    private Point toBoardSpace(Point screenPoint) {
+    private Vector2i toBoardSpace(Vector2i screenPoint) {
         final int areaX = sizeInPixels.x - 2 * margin.x;
         final int areaY = sizeInPixels.y - 2 * margin.y;
         final int boardX = screenPoint.x - offset.x - margin.x;
@@ -67,7 +65,7 @@ public class Board extends SceneNode {
         final int pieceAreaY = areaY / pieceCount.y;
 
         if (boardX >= 0 && boardX < areaX && boardY >= 0 && boardY < areaY) {
-            return new Point(
+            return new Vector2i(
                     boardX / pieceAreaX,
                     boardY / pieceAreaY
             );
@@ -78,7 +76,7 @@ public class Board extends SceneNode {
 
     public void onDrag(int screenX, int screenY) {
         if (!dragProcessed) {
-            Point dragPosition = toBoardSpace(new Point(screenX, screenY));
+            Vector2i dragPosition = toBoardSpace(new Vector2i(screenX, screenY));
             if (dragPosition == null) {
                 // Dragged off the board.
                 dragProcessed = true;
@@ -103,14 +101,14 @@ public class Board extends SceneNode {
     }
 
     public void onTouch(int screenX, int screenY) {
-        Point pt = toBoardSpace(new Point(screenX, screenY));
+        Vector2i pt = toBoardSpace(new Vector2i(screenX, screenY));
         if (pt != null) {
             touchPosition = pt;
             dragProcessed = false;
         }
     }
 
-    private void swapPieces(Point firstPosition, Point secondPosition) {
+    private void swapPieces(Vector2i firstPosition, Vector2i secondPosition) {
         Piece first = pieces[firstPosition.x][firstPosition.y];
         pieces[firstPosition.x][firstPosition.y] = pieces[secondPosition.x][secondPosition.y];
         pieces[secondPosition.x][secondPosition.y] = first;
@@ -141,7 +139,7 @@ public class Board extends SceneNode {
                 // Matching [x0, x1).
                 int matchedCount = x1 - x0;
                 if (matchedCount >= 3) {
-                    return new Match(new Point(x0, y), new Point(x1 - 1, y));
+                    return new Match(new Vector2i(x0, y), new Vector2i(x1 - 1, y));
                 }
             }
         }
@@ -161,7 +159,7 @@ public class Board extends SceneNode {
                 // Matching [y0, y1).
                 int matchedCount = y1 - y0;
                 if (matchedCount >= 3) {
-                    return new Match(new Point(x, y0), new Point(x, y1 - 1));
+                    return new Match(new Vector2i(x, y0), new Vector2i(x, y1 - 1));
                 }
             }
         }
@@ -211,7 +209,7 @@ public class Board extends SceneNode {
 
     @Override
     public void draw(SpriteBatch batch) {
-        backgroundSprite.draw(batch);
+        batch.draw(backgroundTexture, offset.x, offset.y, sizeInPixels.x, sizeInPixels.y);
         for (Piece[] row : pieces) {
             for (Piece piece : row) {
                 if (piece != null) {
@@ -221,7 +219,7 @@ public class Board extends SceneNode {
         }
     }
 
-    public Point getPieceCount() {
+    public Vector2i getPieceCount() {
         return pieceCount;
     }
 
@@ -231,18 +229,23 @@ public class Board extends SceneNode {
 
     public void setPieceAt(int x, int y, Piece piece) {
         pieces[x][y] = piece;
-        pieces[x][y].updatePosition(new Point(x, y));
+        pieces[x][y].updatePosition(new Vector2i(x, y));
     }
 
-    public Point getOffset() {
+    public Vector2i getOffset() {
         return offset;
     }
 
-    public Point getMargin() {
+    public Vector2i getMargin() {
         return margin;
     }
 
-    public Point getSizeInPixels() {
+    public Vector2i getSizeInPixels() {
         return sizeInPixels;
+    }
+
+    @Override
+    public void dispose() {
+        backgroundTexture.dispose();
     }
 }

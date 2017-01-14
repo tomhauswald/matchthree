@@ -16,12 +16,11 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector;
 import com.badlogic.gdx.math.Vector2;
 
-import java.awt.Point;
 import java.util.HashMap;
 
 public class Game implements ApplicationListener, InputProcessor {
 
-    public static final Point RESOLUTION = new Point(1920, 1080);
+    public static final Vector2i RESOLUTION = new Vector2i(1920, 1080);
 
     public enum TextureAtlasName {
         Characters,
@@ -94,6 +93,8 @@ public class Game implements ApplicationListener, InputProcessor {
             atlas.dispose();
         }
         textureAtlases.clear();
+
+        board.dispose();
 	}
 
     @Override

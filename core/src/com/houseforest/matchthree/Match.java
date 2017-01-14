@@ -10,10 +10,10 @@ public class Match {
 
     private boolean horizontal;
     private int length;
-    private Point start;
-    private Point end;
+    private Vector2i start;
+    private Vector2i end;
 
-    public Match(Point start, Point end) {
+    public Match(Vector2i start, Vector2i end) {
         this.start = start;
         this.end = end;
         this.horizontal = end.x != start.x;
@@ -28,11 +28,11 @@ public class Match {
         return length;
     }
 
-    public Point getStart() {
+    public Vector2i getStart() {
          return start;
     }
 
-    public Point getEnd() {
+    public Vector2i getEnd() {
         return end;
     }
 }
