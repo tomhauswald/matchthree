@@ -32,19 +32,17 @@ public class Board extends SceneNode implements Disposable {
     public Board(Game game) {
         super(game);
 
-        pieceCount = new Vector2i(8, 8);
+        pieceCount = new Vector2i(8);
 
-        sizeInPixels = new Vector2i(
-                Math.round(Game.RESOLUTION.y * 0.9f),
-                Math.round(Game.RESOLUTION.y * 0.9f)
-        );
+        int minDim = Math.min(Game.RESOLUTION.x, Game.RESOLUTION.y);
+        sizeInPixels = new Vector2i(Math.round(minDim * 0.95f));
 
         offset = new Vector2i(
                 (Game.RESOLUTION.x - sizeInPixels.x) / 2,
                 (Game.RESOLUTION.y - sizeInPixels.y) / 2
         );
 
-        margin = new Vector2i(18, 18);
+        margin = new Vector2i(21);
 
         this.pieces = new Piece[pieceCount.x][pieceCount.y];
         for (int x = 0; x < pieceCount.x; ++x) {
@@ -118,7 +116,7 @@ public class Board extends SceneNode implements Disposable {
 
         Match match;
         while((match = findMatch()) != null) {
-            Game.log("Found match from " + match.getStart().toString() + " to " + match.getEnd().toString());
+            Util.log("Found match from " + match.getStart().toString() + " to " + match.getEnd().toString());
             handleMatch(match);
         }
     }

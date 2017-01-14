@@ -20,7 +20,7 @@ import java.util.HashMap;
 
 public class Game implements ApplicationListener, InputProcessor {
 
-    public static final Vector2i RESOLUTION = new Vector2i(1920, 1080);
+    public static final Vector2i RESOLUTION = new Vector2i(1080, 1920);
 
     public enum TextureAtlasName {
         Characters,
@@ -61,12 +61,18 @@ public class Game implements ApplicationListener, InputProcessor {
 
     }
 
+    private void update(float dt) {
+        camera.update();
+        board.update(dt);
+    }
+
     @Override
 	public void render () {
-		Gdx.gl.glClearColor(0, 0, 0, 1);
+        update(Gdx.graphics.getDeltaTime());
+
+        Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        camera.update();
         batch.setProjectionMatrix(camera.combined);
 		batch.begin();
 
@@ -149,13 +155,5 @@ public class Game implements ApplicationListener, InputProcessor {
 
     public TextureAtlas getTextureAtlas(TextureAtlasName name) {
         return textureAtlases.get(name);
-    }
-
-    public static final void log(String message) {
-        Gdx.app.log("matchthree", message);
-    }
-
-    public static <T> T randomArrayElement(T[] array) {
-        return array[MathUtils.random(array.length - 1)];
     }
 }
