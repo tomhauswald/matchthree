@@ -20,7 +20,7 @@ import java.util.HashMap;
 
 public class Game implements ApplicationListener, InputProcessor {
 
-    public static final Vector2i RESOLUTION = new Vector2i(1080, 1920);
+    public static final Vector2i RESOLUTION = new Vector2i(1080, 640);
 
     public enum TextureAtlasName {
         Characters,
@@ -38,6 +38,8 @@ public class Game implements ApplicationListener, InputProcessor {
     private HashMap<TextureAtlasName, TextureAtlas> textureAtlases;
     private OrthographicCamera camera;
     private State state;
+
+    private Texture backgroundTexture;
 
 	@Override
 	public void create () {
@@ -61,6 +63,7 @@ public class Game implements ApplicationListener, InputProcessor {
         camera = new OrthographicCamera(RESOLUTION.x, RESOLUTION.y);
         camera.setToOrtho(true, RESOLUTION.x, RESOLUTION.y);
 
+        backgroundTexture = new Texture(Gdx.files.internal("general/bg_trail.jpg"));
         state = State.Active;
 	}
 
@@ -84,6 +87,7 @@ public class Game implements ApplicationListener, InputProcessor {
         batch.setProjectionMatrix(camera.combined);
 		batch.begin();
 
+        Util.drawTextureFlipped(batch, backgroundTexture, 0, 0, RESOLUTION.x, RESOLUTION.y);
         board.draw(batch);
 
 		batch.end();

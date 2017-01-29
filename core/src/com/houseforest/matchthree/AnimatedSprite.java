@@ -8,8 +8,6 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 
-import javafx.scene.Scene;
-
 /**
  * Created by Tom on 14.01.2017.
  */
