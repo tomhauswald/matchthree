@@ -79,16 +79,16 @@ public class Piece extends AnimatedSprite {
             Piece.movementSpeeds.put(MovementType.Fall, 7.5f);
         }
 
-        setAnimation(getGame().getAnimationManager().get("piece_idle_1"));
+        setAnimation(Piece.animations.get(variant).get("idle"));
+        setBoardPosition(new Vector2i(x, y));
 
         float scaleFactor = pieceSize.x / Math.max(getWidth(), getHeight());
         setWidth(getWidth() * scaleFactor);
         setHeight(getHeight() * scaleFactor);
 
-        this.state = State.Idle;
-        setBoardPosition(new Vector2i(x, y));
-         // Piece.animations.get(variant).get("idle"));
         nextBlinkTime = MathUtils.random(1.0f, 10.0f);
+
+        this.state = State.Idle;
     }
 
     public static final void cacheAnimations(Game game) {
@@ -124,7 +124,7 @@ public class Piece extends AnimatedSprite {
     @Override
     public void update(float dt) {
         if((nextBlinkTime -= dt) <= 0.0f) {
-            //blink();
+            blink();
         }
 
         switch(state) {
@@ -145,9 +145,9 @@ public class Piece extends AnimatedSprite {
     }
 
     private void updateIdleState(float dt) {
-        /* if(getAnimation() == animations.get(variant).get("blink") && hasAnimationFinished()) {
+        if(getAnimation() == animations.get(variant).get("blink") && hasAnimationFinished()) {
             setAnimation(animations.get(variant).get("idle"));
-        } */
+        }
     }
 
     private void updateMoveState(float dt) {
