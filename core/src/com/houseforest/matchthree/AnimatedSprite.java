@@ -20,6 +20,11 @@ public class AnimatedSprite extends SceneNode {
     private float width;
     private float height;
 
+    AnimatedSprite(Game game) {
+        super(game);
+        setAnimation(null);
+    }
+
     AnimatedSprite(Game game, TextureAtlas atlas, String[] keyFrameNames, float keyFrameDuration, Animation.PlayMode mode) {
         super(game);
 
@@ -28,10 +33,7 @@ public class AnimatedSprite extends SceneNode {
             keyFrames.add(atlas.findRegion(keyFrameNames[i]));
         }
 
-        this.animation = new Animation<>(keyFrameDuration, keyFrames, mode);
-        this.width = this.animation.getKeyFrame(0.0f).getRegionWidth();
-        this.height = this.animation.getKeyFrame(0.0f).getRegionHeight();
-        reset();
+        setAnimation(new Animation<>(keyFrameDuration, keyFrames, mode));
     }
 
     public float getWidth() {
@@ -52,17 +54,27 @@ public class AnimatedSprite extends SceneNode {
 
     @Override
     public void draw(SpriteBatch batch) {
-        batch.draw(currentFrame, getX(), getY(), width, height);
+        if(animation != null && currentFrame != null) {
+            batch.draw(currentFrame, getX(), getY(), width, height);
+        }
     }
 
     public void reset() {
         elapsed = 0.0f;
-        currentFrame = animation.getKeyFrame(elapsed);
+        if(animation != null) {
+            currentFrame = animation.getKeyFrame(0.0f);
+        } else {
+            currentFrame = null;
+        }
     }
 
     public void update(float dt) {
-        elapsed += dt;
-        currentFrame = animation.getKeyFrame(elapsed);
+        if(animation != null) {
+            elapsed += dt;
+            currentFrame = animation.getKeyFrame(elapsed);
+        } else {
+            currentFrame = null;
+        }
     }
 
     public Animation<TextureRegion> getAnimation() {
@@ -71,6 +83,15 @@ public class AnimatedSprite extends SceneNode {
 
     public void setAnimation(Animation<TextureRegion> animation){
         this.animation = animation;
+        if(animation != null) {
+            setWidth(animation.getKeyFrame(0.0f).getRegionWidth());
+            setHeight(animation.getKeyFrame(0.0f).getRegionHeight());
+        }
         reset();
+    }
+
+    public boolean hasAnimationFinished() {
+        assert animation != null;
+        return animation.isAnimationFinished(elapsed);
     }
 }

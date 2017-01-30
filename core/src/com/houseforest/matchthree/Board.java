@@ -82,7 +82,7 @@ public class Board extends SceneNode implements Disposable {
         if(state == State.Idle) {
             if (!dragProcessed) {
                 Vector2i dragPosition = toBoardSpace(new Vector2i(screenX, screenY));
-                if (dragPosition == null) {
+                if (dragPosition == null || touchPosition == null) {
                     // Dragged off the board.
                     dragProcessed = true;
                 }
@@ -269,19 +269,19 @@ public class Board extends SceneNode implements Disposable {
 
     private void udateAnimatingState(float dt) {
 
-        // Check for any remaining moving board pieces.
-        boolean done = true;
+        // Check for any remaining non-idle board pieces.
+        boolean idle = true;
         for (Piece[] row : pieces) {
             for(Piece piece : row) {
-                if (piece.isMoving()) {
-                    done = false;
+                if (!piece.isIdle()) {
+                    idle = false;
                     break;
                 }
             }
         }
 
         // Board pieces have settled.
-        if(done) {
+        if(idle) {
             state = State.Check;
         }
     }

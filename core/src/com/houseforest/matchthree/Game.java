@@ -9,12 +9,14 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
 
 import java.util.HashMap;
 
@@ -40,20 +42,14 @@ public class Game implements ApplicationListener, InputProcessor {
     private State state;
 
     private Texture backgroundTexture;
+    private AnimationManager<String> animationManager;
 
 	@Override
 	public void create () {
-        textureAtlases = new HashMap<TextureAtlasName, TextureAtlas>(TextureAtlasName.values().length);
-        textureAtlases.put(TextureAtlasName.Characters, new TextureAtlas("characters/characters.pack"));
-        textureAtlases.put(TextureAtlasName.UI, new TextureAtlas("ui/ui.pack"));
-        textureAtlases.put(TextureAtlasName.Numbers, new TextureAtlas("numbers/numbers.pack"));
+        loadTextures();
 
-        // Accomodate for upside-down coordinate system.
-        for(TextureAtlas atlas : textureAtlases.values()){
-            for(TextureRegion region : atlas.getRegions()) {
-                region.flip(false, true);
-            }
-        }
+        animationManager = new AnimationManager<>();
+        loadAnimations();
 
 		batch = new SpriteBatch();
         board = new Board(this);
@@ -63,9 +59,67 @@ public class Game implements ApplicationListener, InputProcessor {
         camera = new OrthographicCamera(RESOLUTION.x, RESOLUTION.y);
         camera.setToOrtho(true, RESOLUTION.x, RESOLUTION.y);
 
-        backgroundTexture = new Texture(Gdx.files.internal("general/bg_trail.jpg"));
         state = State.Active;
 	}
+
+    private void loadTextures() {
+        // Texture atlases.
+        textureAtlases = new HashMap<>(TextureAtlasName.values().length);
+        textureAtlases.put(TextureAtlasName.Characters, new TextureAtlas(Gdx.files.internal("characters/characters.pack"), true));
+        textureAtlases.put(TextureAtlasName.UI, new TextureAtlas(Gdx.files.internal("ui/ui.pack"), true));
+        textureAtlases.put(TextureAtlasName.Numbers, new TextureAtlas(Gdx.files.internal("numbers/numbers.pack"), true));
+
+        // Individual textures.
+        backgroundTexture = new Texture(Gdx.files.internal("general/bg_trail.jpg"));
+    }
+
+    private void loadAnimations() {
+        TextureAtlas atlas = getTextureAtlas(Game.TextureAtlasName.Characters);
+        assert atlas != null;
+
+        // Load board piece animations.
+        for(int variantIndex = 1; variantIndex <= Piece.Variant.values().length; ++variantIndex) {
+
+            Array<TextureRegion> keyframes;
+
+            // Idle.
+            {
+                keyframes = new Array<>(1);
+                keyframes.setSize(1);
+                keyframes.set(0, atlas.findRegion("CharactersBright_Line" + variantIndex));
+                animationManager.add(
+                        "piece_idle_" + variantIndex,
+                        new Animation<>(1.0f, keyframes, Animation.PlayMode.LOOP)
+                );
+            }
+
+            // Blink.
+            {
+                keyframes = new Array<>(1);
+                keyframes.setSize(1);
+                keyframes.set(0, atlas.findRegion("BlinkBright_Line" + variantIndex));
+                animationManager.add(
+                        "piece_blink_" + variantIndex,
+                        new Animation<>(0.2f, keyframes, Animation.PlayMode.NORMAL)
+                );
+            }
+
+            // Explode.
+            {
+                keyframes = new Array<>(3);
+                keyframes.setSize(3);
+                keyframes.set(0, atlas.findRegion("CharactersGray_Line"  + variantIndex));
+                keyframes.set(1, atlas.findRegion("CharactersBlack_Line" + variantIndex));
+                keyframes.set(2, atlas.findRegion("CharactersGray_Line"  + variantIndex));
+                animationManager.add(
+                        "piece_explode_" + variantIndex,
+                        new Animation<>(0.2f, keyframes, Animation.PlayMode.NORMAL)
+                );
+            }
+        }
+
+        Piece.cacheAnimations(this);
+    }
 
     @Override
     public void resize(int width, int height) {
@@ -106,14 +160,16 @@ public class Game implements ApplicationListener, InputProcessor {
     @Override
 	public void dispose () {
 		batch.dispose();
+        disposeTextures();
+        board.dispose();
+	}
 
+    private void disposeTextures() {
         for(TextureAtlas atlas : textureAtlases.values()) {
             atlas.dispose();
         }
         textureAtlases.clear();
-
-        board.dispose();
-	}
+    }
 
     @Override
     public boolean keyDown(int keycode) {
@@ -187,5 +243,9 @@ public class Game implements ApplicationListener, InputProcessor {
 
     public void setState(State state) {
         this.state = state;
+    }
+
+    public AnimationManager<String> getAnimationManager() {
+        return animationManager;
     }
 }
