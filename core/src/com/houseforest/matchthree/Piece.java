@@ -193,19 +193,17 @@ public class Piece extends AnimatedSprite {
         nextBlinkTime = MathUtils.random(6.0f, 30.0f);
     }
 
-    private void explode() {
+    public void explode() {
         setAnimation(animations.get(variant).get("explode"));
         state = State.Explosion;
     }
 
     public void moveToBoardPosition(Vector2i target, MovementType movementType) {
-
         Vector2i bpos = getBoardPosition();
-        // Util.log("Moving from {" + bpos.x + ", " + bpos.y + "} to {" + target.x + ", " + target.y + "}");
 
         state = State.Move;
         moveProgress = 0.0f;
-        moveTargetBoardPosition = target;
+        moveTargetBoardPosition = new Vector2i(target.x, target.y);
         this.movementType = movementType;
 
         if (moveTargetBoardPosition.x > bpos.x) {
@@ -217,17 +215,14 @@ public class Piece extends AnimatedSprite {
         } else if (moveTargetBoardPosition.y < bpos.y) {
             moveDirection = Direction.Up;
         } else {
-            // Util.log("Moving to current location. D'oh!");
             state = State.Idle;
         }
 
         if(state == State.Move) {
             if (moveDirection == Direction.Left || moveDirection == Direction.Right) {
                 moveDistance = (pieceSize.x + 2 * padding.x) * Math.abs(target.x - bpos.x);
-                // Util.log("moveDistance = " + moveDistance);
             } else {
                 moveDistance = (pieceSize.y + 2 * padding.y) * Math.abs(target.y - bpos.y);
-                // Util.log("moveDistance = " + moveDistance);
             }
         }
     }

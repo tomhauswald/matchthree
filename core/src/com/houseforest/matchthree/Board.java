@@ -15,8 +15,11 @@ public class Board extends SceneNode implements Disposable {
 
     public enum State {
         Idle,
-        Animating,
-        Check
+        Swapping,
+        Falling,
+        Refilling,
+        Exploding,
+        Checking
     }
 
     private Texture backgroundTexture;
@@ -27,6 +30,7 @@ public class Board extends SceneNode implements Disposable {
     private Vector2i margin;
     private Vector2i touchPosition;
     private boolean dragProcessed;
+    private Vector<Vector2i> explosionCoordinates;
 
     private State state;
 
@@ -57,9 +61,10 @@ public class Board extends SceneNode implements Disposable {
 
         this.backgroundTexture = new Texture(Gdx.files.internal("general/grid.png"));
 
-        this.state = State.Check;
+        this.state = State.Checking;
 
         this.refillPieces = new Vector<>();
+        this.explosionCoordinates = new Vector<>();
     }
 
     public Vector2i toBoardSpace(Vector2i screenPoint) {
@@ -124,31 +129,30 @@ public class Board extends SceneNode implements Disposable {
     }
 
     private void refill() {
+        state = State.Refilling;
 
         // Find empty grid cells.
-        Vector<Vector2i> positions = new Vector<>();
+        Vector2i bpos = new Vector2i(0);
         for(int x = 0; x < pieceCount.x; ++x){
             for(int y = 0; y < pieceCount.y; ++y){
                 if(pieces[x][y] == null) {
-                    positions.add(new Vector2i(x, y));
+                    bpos.x = x;
+                    bpos.y = y;
+                    pieces[x][y] = Piece.random(
+                            getGame(),
+                            this,
+                            x,
+                            y - pieceCount.y
+                    );
+                    pieces[x][y].moveToBoardPosition(bpos, Piece.MovementType.Fall);
                 }
             }
         }
-
-        for(Vector2i position : positions) {
-            pieces[position.x][position.y] = Piece.random(
-                    getGame(),
-                    this,
-                    position.x,
-                    position.y - pieceCount.y
-            );
-            pieces[position.x][position.y].moveToBoardPosition(position, Piece.MovementType.Fall);
-        }
-
-        state = State.Animating;
     }
 
     private void swap(Vector2i firstPosition, Vector2i secondPosition) {
+        state = State.Swapping;
+
         Piece first = pieces[firstPosition.x][firstPosition.y];
         first.moveToBoardPosition(secondPosition, Piece.MovementType.Swap);
 
@@ -157,8 +161,6 @@ public class Board extends SceneNode implements Disposable {
 
         pieces[firstPosition.x][firstPosition.y] = second;
         pieces[secondPosition.x][secondPosition.y] = first;
-
-        state = State.Animating;
     }
 
     private Match findMatch() {
@@ -206,42 +208,38 @@ public class Board extends SceneNode implements Disposable {
         return null;
     }
 
+    private void updateFallingState(float dt) {
+        boolean falling = false;
+        Vector2i moveTarget = new Vector2i(0);
+        for(int y = pieceCount.y - 1; y > 0; --y) {
+            for(int x = 0; x < pieceCount.x; ++x) {
+                if(pieces[x][y] == null) {
+                    // If empty, replace by piece above.
+                    moveTarget.x = x;
+                    moveTarget.y = y;
+                    pieces[x][y] = pieces[x][y-1];
+                    pieces[x][y-1] = null;
+                    if(pieces[x][y] != null) {
+                        pieces[x][y].moveToBoardPosition(moveTarget, Piece.MovementType.Fall);
+                        falling = true;
+                    }
+                }
+            }
+        }
+
+        if(!falling && !piecesMoving()) {
+            refill();
+        }
+    }
+
     private void handleMatch(Match match) {
-
-        if(match.isHorizontal()) {
-
-            int y = match.getStart().y;
-
-            for (int x = match.getStart().x; x <= match.getEnd().x; ++x) {
-
-                for (int yy = y; yy > 0; --yy) {
-                    // Move pieces down.
-                    pieces[x][yy] = pieces[x][yy - 1];
-                    pieces[x][yy].moveToBoardPosition(new Vector2i(x, yy), Piece.MovementType.Fall);
-                }
-
-                // Empty cells atop of match.
-                pieces[x][0] = null;
+        for(int y = match.getStart().y; y <= match.getEnd().y; ++y) {
+            for(int x = match.getStart().x; x <= match.getEnd().x; ++x) {
+                explosionCoordinates.add(new Vector2i(x, y));
+                pieces[x][y].explode();
             }
         }
-
-        // Vertical match
-        else {
-
-            int x = match.getStart().x;
-
-            for (int y = match.getEnd().y; y >= 0; --y) {
-                if(y > match.getLength()) {
-                    pieces[x][y] = pieces[x][y - match.getLength()];
-                    pieces[x][y].moveToBoardPosition(new Vector2i(x, y), Piece.MovementType.Fall);
-                } else {
-                    pieces[x][y] = null;
-                }
-            }
-        }
-
-        // Issue refill.
-       refill();
+        state = State.Exploding;
     }
 
     @Override
@@ -257,9 +255,33 @@ public class Board extends SceneNode implements Disposable {
         }
 
         switch(state) {
-            case Idle: updateIdleState(dt); break;
-            case Animating: udateAnimatingState(dt); break;
-            case Check: updateCheckState(dt); break;
+            case Idle:
+                updateIdleState(dt);
+            break;
+
+            case Falling:
+                updateFallingState(dt);
+            break;
+
+            case Swapping:
+                if(!piecesMoving()) {
+                    state = State.Checking;
+                }
+            break;
+
+            case Refilling:
+                if(!piecesMoving()) {
+                    state = State.Checking;
+                }
+            break;
+
+            case Exploding:
+                updateExplodeState(dt);
+            break;
+
+            case Checking:
+                updateCheckState(dt);
+            break;
             default: break;
         }
     }
@@ -267,23 +289,15 @@ public class Board extends SceneNode implements Disposable {
     private void updateIdleState(float dt) {
     }
 
-    private void udateAnimatingState(float dt) {
-
-        // Check for any remaining non-idle board pieces.
-        boolean idle = true;
+    private boolean piecesMoving() {
         for (Piece[] row : pieces) {
             for(Piece piece : row) {
-                if (!piece.isIdle()) {
-                    idle = false;
-                    break;
+                if (piece != null && !piece.isIdle()) {
+                    return true;
                 }
             }
         }
-
-        // Board pieces have settled.
-        if(idle) {
-            state = State.Check;
-        }
+        return false;
     }
 
     private void updateCheckState(float dt) {
@@ -297,10 +311,27 @@ public class Board extends SceneNode implements Disposable {
 
         // We found a match, handle it and check for remaining matches in the next iteration.
         else {
-            Util.log("Found match from {" +
+            /* Util.log("Found match from {" +
                     match.getStart().x + ", " + match.getStart().y + "} to {" +
-                    match.getEnd().x + ", " + match.getEnd().y + "}");
+                    match.getEnd().x + ", " + match.getEnd().y + "}"); */
             handleMatch(match);
+        }
+    }
+
+    private void updateExplodeState(float dt) {
+        boolean done = true;
+        for(Vector2i pos : explosionCoordinates) {
+            if (pieces[pos.x][pos.y] != null && !pieces[pos.x][pos.y].hasAnimationFinished()) {
+                done = false;
+            }
+        }
+
+        if(done) {
+            for (Vector2i pos : explosionCoordinates) {
+                pieces[pos.x][pos.y] = null;
+            }
+            explosionCoordinates.clear();
+            state = State.Falling;
         }
     }
 

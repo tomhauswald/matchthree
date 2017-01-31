@@ -107,13 +107,15 @@ public class Game implements ApplicationListener, InputProcessor {
             // Explode.
             {
                 keyframes = new Array<>(3);
-                keyframes.setSize(3);
+                keyframes.setSize(5);
                 keyframes.set(0, atlas.findRegion("CharactersGray_Line"  + variantIndex));
                 keyframes.set(1, atlas.findRegion("CharactersBlack_Line" + variantIndex));
                 keyframes.set(2, atlas.findRegion("CharactersGray_Line"  + variantIndex));
+                keyframes.set(3, atlas.findRegion("CharactersBlack_Line" + variantIndex));
+                keyframes.set(4, atlas.findRegion("CharactersGray_Line"  + variantIndex));
                 animationManager.add(
                         "piece_explode_" + variantIndex,
-                        new Animation<>(0.2f, keyframes, Animation.PlayMode.NORMAL)
+                        new Animation<>(0.12f, keyframes, Animation.PlayMode.NORMAL)
                 );
             }
         }
