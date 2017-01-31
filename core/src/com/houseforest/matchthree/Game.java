@@ -28,10 +28,16 @@ public class Game implements ApplicationListener, InputProcessor {
         Numbers
     }
 
+    public enum State {
+        Active,
+        Menu
+    }
+
 	private SpriteBatch batch;
 	private Board board;
     private HashMap<TextureAtlasName, TextureAtlas> textureAtlases;
     private OrthographicCamera camera;
+    private State state;
 
 	@Override
 	public void create () {
@@ -54,6 +60,8 @@ public class Game implements ApplicationListener, InputProcessor {
 
         camera = new OrthographicCamera(RESOLUTION.x, RESOLUTION.y);
         camera.setToOrtho(true, RESOLUTION.x, RESOLUTION.y);
+
+        state = State.Active;
 	}
 
     @Override
@@ -120,9 +128,15 @@ public class Game implements ApplicationListener, InputProcessor {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        if (pointer == 0) {
-            board.onTouch(screenX, screenY);
-            return true;
+
+        // Only allow player moves in active state.
+        if(state == State.Active) {
+            if (pointer == 0) {
+                board.onTouch(screenX, screenY);
+                return true;
+            } else {
+                return false;
+            }
         } else {
             return false;
         }
@@ -135,9 +149,15 @@ public class Game implements ApplicationListener, InputProcessor {
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
-        if (pointer == 0) {
-            board.onDrag(screenX, screenY);
-            return true;
+
+        // Only allow player moves in active state.
+        if(state == State.Active) {
+            if (pointer == 0) {
+                board.onDrag(screenX, screenY);
+                return true;
+            } else {
+                return false;
+            }
         } else {
             return false;
         }
@@ -155,5 +175,13 @@ public class Game implements ApplicationListener, InputProcessor {
 
     public TextureAtlas getTextureAtlas(TextureAtlasName name) {
         return textureAtlases.get(name);
+    }
+
+    public State getState() {
+        return state;
+    }
+
+    public void setState(State state) {
+        this.state = state;
     }
 }

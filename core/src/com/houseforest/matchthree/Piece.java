@@ -60,7 +60,7 @@ public class Piece extends AnimatedSprite {
         float scaleFactor = pieceSize.x / Math.max(getWidth(), getHeight());
         setWidth(getWidth() * scaleFactor);
         setHeight(getHeight() * scaleFactor);
-        updatePosition(this.boardPosition);
+        setBoardPosition(this.boardPosition);
         blink();
     }
 
@@ -68,7 +68,11 @@ public class Piece extends AnimatedSprite {
         return variant;
     }
 
-    public void updatePosition(Vector2i position) {
+    public Vector2i getBoardPosition() {
+        return boardPosition;
+    }
+
+    public void setBoardPosition(Vector2i position) {
         this.boardPosition = position;
         setX(board.getOffset().x + board.getMargin().x + padding.x + position.x * (pieceSize.x + 2 * padding.x) + (pieceSize.x - getWidth()) / 2);
         setY(board.getOffset().y + board.getMargin().y + padding.y + position.y * (pieceSize.y + 2 * padding.y) + (pieceSize.y - getHeight()) / 2);
@@ -76,6 +80,10 @@ public class Piece extends AnimatedSprite {
 
     public static Piece random(Game game, Board board, int x, int y) {
         return new Piece(game, board, x, y, Util.randomArrayElement(Variant.values()));
+    }
+
+    public static Vector2i getPieceSize() {
+        return pieceSize;
     }
 
     @Override
