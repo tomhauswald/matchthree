@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Disposable;
 
+import java.sql.Ref;
 import java.util.Vector;
 
 /**
@@ -21,16 +22,6 @@ public class Board extends SceneNode implements Disposable {
         Check
     }
 
-    public class PieceRelocation {
-        public Piece piece;
-        public Vector2i targetPosition;
-
-        public PieceRelocation(Piece piece, Vector2i target) {
-            this.piece = piece;
-            this.targetPosition = target;
-        }
-    }
-
     private Texture backgroundTexture;
     private Piece[][] pieces;
     private Vector2i pieceCount;
@@ -39,8 +30,6 @@ public class Board extends SceneNode implements Disposable {
     private Vector2i margin;
     private Vector2i touchPosition;
     private boolean dragProcessed;
-
-    private Vector<PieceRelocation> pendingRelocations;
 
     private State state;
 
@@ -74,11 +63,6 @@ public class Board extends SceneNode implements Disposable {
         this.state = State.Check;
 
         this.refillPieces = new Vector<>();
-        this.pendingRelocations = new Vector<>();
-    }
-
-    public void addPendingRelocation(Piece piece, Vector2i destination) {
-        pendingRelocations.add(new PieceRelocation(piece, destination));
     }
 
     public Vector2i toBoardSpace(Vector2i screenPoint) {
@@ -89,14 +73,10 @@ public class Board extends SceneNode implements Disposable {
         final int pieceAreaX = areaX / pieceCount.x;
         final int pieceAreaY = areaY / pieceCount.y;
 
-        if (boardX >= 0 && boardX < areaX && boardY >= 0 && boardY < areaY) {
-            return new Vector2i(
-                    boardX / pieceAreaX,
-                    boardY / pieceAreaY
-            );
-        } else {
-            return null;
-        }
+        return new Vector2i(
+                boardX / pieceAreaX,
+                boardY / pieceAreaY
+        );
     }
 
     public void onDrag(int screenX, int screenY) {
@@ -147,6 +127,7 @@ public class Board extends SceneNode implements Disposable {
     }
 
     private void initializePieceRefills(Vector2i[] refillPositions) {
+        /*
         Util.log("initializePieceRefills({");
         for(Vector2i rp : refillPositions) {
             Util.log("{"+rp.x+", "+rp.y+"}, ");
@@ -154,11 +135,12 @@ public class Board extends SceneNode implements Disposable {
         Util.log("});");
 
         for(Vector2i rp : refillPositions) {
-            refillPieces.add(Piece.random(getGame(), this, rp.x, 0));
+            refillPieces.add(Piece.randomFloating(getGame(), this, rp.x));
             refillPieces.lastElement().moveToBoardPosition(rp);
         }
 
         state = State.Refill;
+        */
     }
 
     private void initializePieceSwap(Vector2i firstPosition, Vector2i secondPosition) {
@@ -214,49 +196,47 @@ public class Board extends SceneNode implements Disposable {
 
     private void handleMatch(Match match) {
 
-        Vector2i[] refillPositions = new Vector2i[match.getLength()];
-
         if(match.isHorizontal()) {
+
             int y = match.getStart().y;
 
             for (int x = match.getStart().x; x <= match.getEnd().x; ++x) {
+
                 for (int yy = y; yy > 0; --yy) {
                     // Move pieces down.
-                    pieces[x][yy - 1].moveToBoardPosition(new Vector2i(x, yy));
-                    // setPieceAt(x, yy, getPieceAt(x, yy - 1));
+                    pieces[x][yy] = pieces[x][yy - 1];
+                    pieces[x][yy].moveToBoardPosition(new Vector2i(x, yy));
                 }
 
                 // Generate new piece at top.
-                refillPositions[x - match.getStart().x] = new Vector2i(x, 0);
-                //setPieceAt(x, 0, Piece.random(getGame(), this, x, 0));
+                pieces[x][0] = Piece.randomFloating(getGame(), this, x);
+                pieces[x][0].moveToBoardPosition(new Vector2i(x, 0));
             }
         }
 
         // Vertical match
         else {
+
             int x = match.getStart().x;
 
-            for (int y = match.getEnd().y; y >= match.getLength(); --y) {
+            for (int y = match.getStart().y; y > 0; --y) {
                 // Move pieces down.
-                // setPieceAt(x, y, getPieceAt(x, y - match.getLength()));
-                pieces[x][y - match.getLength()].moveToBoardPosition(new Vector2i(x, y));
+                pieces[x][y] = pieces[x][y-1];
+                pieces[x][y].moveToBoardPosition(new Vector2i(x, y));
             }
 
-            for(int y = 0; y<match.getLength(); ++y) {
+            for(int y = 0; y<match.getStart().y; ++y) {
                 // Generate new pieces above.
-                // setPieceAt(x, y, Piece.random(getGame(), this, x, y));
-                refillPositions[y] = new Vector2i(x, y);
+                pieces[x][y] = Piece.random(getGame(), this, x, y - match.getStart().y);
+                pieces[x][y].moveToBoardPosition(new Vector2i(x, y));
             }
         }
 
-        initializePieceRefills(refillPositions);
+        state = State.Refill;
     }
 
     @Override
     public void update(float dt) {
-
-        // Remove all pending relocations.
-        pendingRelocations.clear();
 
         // Update pieces.
         for (Piece[] row : pieces) {
@@ -273,11 +253,6 @@ public class Board extends SceneNode implements Disposable {
             case Refill: updateRefillState(dt); break;
             case Check: updateCheckState(dt); break;
             default: break;
-        }
-
-        // Handle pending piece relocations.
-        for(PieceRelocation reloc : pendingRelocations) {
-            setPieceAt(reloc.targetPosition.x, reloc.targetPosition.y, reloc.piece);
         }
     }
 
@@ -320,7 +295,6 @@ public class Board extends SceneNode implements Disposable {
 
         // Board pieces have settled.
         if(done) {
-            refillPieces.clear();
             state = State.Check;
         }
     }
@@ -369,7 +343,6 @@ public class Board extends SceneNode implements Disposable {
 
     public void setPieceAt(int x, int y, Piece piece) {
         pieces[x][y] = piece;
-        pieces[x][y].setBoardPosition(new Vector2i(x, y));
     }
 
     public Vector2i getOffset() {

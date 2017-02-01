@@ -35,8 +35,9 @@ public class Piece extends AnimatedSprite {
     private static Vector2i pieceSize;
     private static Board board;
 
-    private float moveProgress;
     private boolean moving;
+    private float moveDistance;
+    private float moveProgress;
     private Direction moveDirection;
     private Vector2i moveTargetBoardPosition;
     private static final float moveSpeed = 2.0f;
@@ -74,9 +75,13 @@ public class Piece extends AnimatedSprite {
         setHeight(getHeight() * scaleFactor);
         blink();
 
-        this.moveProgress = 0.0f;
         this.moving = false;
+        this.moveProgress = 0.0f;
+        this.moveDirection = null;
+        this.moveDistance = 0.0f;
         this.moveTargetBoardPosition = null;
+
+        setBoardPosition(new Vector2i(x, y));
     }
 
     public Variant getVariant() {
@@ -96,6 +101,10 @@ public class Piece extends AnimatedSprite {
         return new Piece(game, board, x, y, Util.randomArrayElement(Variant.values()));
     }
 
+    public static Piece randomFloating(Game game, Board board, int x) {
+        return new Piece(game, board, x, -2, Util.randomArrayElement(Variant.values()));
+    }
+
     @Override
     public void update(float dt) {
         if((nextBlinkTime -= dt) <= 0.0f) {
@@ -103,30 +112,32 @@ public class Piece extends AnimatedSprite {
         }
 
         if(moving){
-            float moveDistance = dt * moveSpeed * (pieceSize.x + 2 * padding.x);
+            float delta = dt * moveSpeed * (pieceSize.x + 2 * padding.x);
+
             switch (moveDirection) {
                 case Right:
-                    getPosition().add(moveDistance, 0);
+                    getPosition().add(delta, 0);
                 break;
 
                 case Left:
-                    getPosition().add(-moveDistance, 0);
+                    getPosition().add(-delta, 0);
                 break;
 
                 case Down:
-                    getPosition().add(0, moveDistance);
+                    getPosition().add(0, delta);
                 break;
 
                 case Up:
-                    getPosition().add(0, -moveDistance);
+                    getPosition().add(0, -delta);
                 break;
             }
 
-            moveProgress += moveSpeed * dt;
-            if(moveProgress >= 1.0f) {
+            moveProgress += delta;
+            if(moveProgress >= moveDistance) {
                 moving = false;
                 moveProgress = 0.0f;
-                board.addPendingRelocation(this, moveTargetBoardPosition);
+                moveDirection = null;
+                moveDistance = 0.0f;
             }
         }
 
@@ -139,22 +150,27 @@ public class Piece extends AnimatedSprite {
     }
 
     public void moveToBoardPosition(Vector2i target) {
-        this.moveProgress = 0.0f;
-        this.moving = true;
-        this.moveTargetBoardPosition = target;
 
-        Util.log("moveToBoardPosition({" + target.x + ", " + target.y + "})");
+        Vector2i bpos = getBoardPosition();
+        Util.log("Moving from {" + bpos.x + ", " + bpos.y + "} to {" + target.x + ", " + target.y + "}");
 
-        if(moveTargetBoardPosition.x > getBoardPosition().x) {
+        moving = true;
+        moveDistance = pieceSize.x * Math.abs(target.x - bpos.x)
+                     + pieceSize.y * Math.abs(target.y - bpos.y);
+        moveProgress = 0.0f;
+        moveTargetBoardPosition = target;
+
+        if (moveTargetBoardPosition.x > bpos.x) {
             moveDirection = Direction.Right;
-        } else if(moveTargetBoardPosition.x < getBoardPosition().x) {
+        } else if (moveTargetBoardPosition.x < bpos.x) {
             moveDirection = Direction.Left;
-        } else if(moveTargetBoardPosition.y > getBoardPosition().y) {
+        } else if (moveTargetBoardPosition.y > bpos.y) {
             moveDirection = Direction.Down;
-        } else if(moveTargetBoardPosition.y < getBoardPosition().y) {
+        } else if (moveTargetBoardPosition.y < bpos.y) {
             moveDirection = Direction.Up;
         } else {
             Util.log("Moving to current location. D'oh!");
+            moving = false;
         }
     }
 
